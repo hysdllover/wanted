@@ -26,7 +26,7 @@
 *{box-sizing:border-box;margin:0;padding:0;border-radius:0!important;-webkit-tap-highlight-color:transparent}
 html,body{min-height:100%}
 body{font-family:var(--font);font-weight:300;font-size:14px;color:var(--ink);background-color:var(--paper);
-  background-image:var(--grain),var(--fiber),var(--margin),var(--rules);background-attachment:scroll;
+  background-image:var(--grain),var(--fiber);background-attachment:scroll;
   text-shadow:0 0 .5px rgba(82,90,98,.55);
   -webkit-user-select:none;user-select:none;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
 body::after{content:'';position:fixed;inset:0;background:var(--age);pointer-events:none;z-index:40}
@@ -135,7 +135,7 @@ main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
 .back{position:fixed;inset:0;background:rgba(60,72,84,.22);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
 .back.on{opacity:1;pointer-events:auto}
 .sheet{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto;max-height:90vh;overflow-y:auto;background-color:var(--paper);
-  background-image:var(--grain),var(--fiber),var(--margin),var(--rules);border-top:1.2px solid var(--ink3);
+  background-image:var(--grain),var(--fiber);border-top:1.2px solid var(--ink3);
   padding:10px 22px calc(env(safe-area-inset-bottom) + 22px);
   transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:21}
 .sheet.on{transform:none}
@@ -428,8 +428,6 @@ document.addEventListener('change',e=>{
 /* home-screen icon */
 (function(){const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d');
   x.fillStyle='#f3f4f2';x.fillRect(0,0,180,180);x.strokeStyle='#e4e8eb';x.lineWidth=2;
-  for(let y=30;y<180;y+=28){x.beginPath();x.moveTo(0,y);x.lineTo(180,y);x.stroke()}
-  x.strokeStyle='rgba(111,133,151,.3)';x.beginPath();x.moveTo(26,0);x.lineTo(26,180);x.stroke();
   x.strokeStyle='#6f8597';x.lineWidth=4;x.beginPath();x.moveTo(43,46);x.lineTo(137,43);x.lineTo(139,139);x.lineTo(41,137);x.closePath();x.stroke();
   x.strokeStyle='#4d5d6c';x.lineWidth=9;x.lineCap='round';x.lineJoin='round';
   x.beginPath();x.moveTo(62,94);x.quadraticCurveTo(72,102,82,116);x.quadraticCurveTo(98,86,128,58);x.stroke();
