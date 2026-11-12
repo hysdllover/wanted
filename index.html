@@ -151,6 +151,14 @@ textarea{border:1.2px solid var(--ink3);padding:10px;resize:none;background:rgba
 .seg button{position:relative;padding:6px 12px;font-size:12px;color:var(--ink2)}
 .seg button::before{content:'';position:absolute;inset:0;border:1px solid var(--lead);opacity:.55;filter:url(#rough)}
 .seg button.on{background:var(--ink);color:var(--paper)}
+.tag{display:inline-block;padding:0 5px;margin-right:6px;color:var(--ink2);background:linear-gradient(transparent 18%,var(--c) 18% 88%,transparent 88%)}
+.dot{display:inline-block;width:9px;height:9px;margin-right:6px;background:var(--c);vertical-align:-.5px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding:4px 0 8px;scrollbar-width:none}.chips::-webkit-scrollbar{display:none}
+.chips .seg{flex-wrap:nowrap}.chips button{flex:none}
+.sw{gap:10px}.sw button{width:30px;height:30px;padding:0;background:var(--c)}
+.sw button::before{opacity:0}.sw button.on{background:var(--c);outline:1.3px solid var(--ink);outline-offset:3px}
+.cat-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;
+  background:repeating-linear-gradient(to right,var(--ink3) 0 5px,transparent 5px 8px) no-repeat 0 100%/100% 1px}
 .btns{display:flex;gap:8px;margin-top:24px}
 .btn{position:relative;flex:1;padding:12px;font-size:14px}
 .btn::before{content:'';position:absolute;inset:0;border:1px solid var(--ink);filter:url(#rough);pointer-events:none}
@@ -229,16 +237,18 @@ const seed=()=>{const t=Date.now();return[
   ['운전면허 따기',3,'12월'],['바다 보러 가기',3,'12월'],['머리 하기',2,'12월'],['밀린 드라마 몰아보기',1,'미정'],
   ['책 열 권 읽기',2,'1월'],['아르바이트 구하기',2,'1월'],['가족 여행',3,'2월']
 ].map(([title,pri,month],i)=>({id:uid()+i,created:t+i,done:false,doneAt:null,photo:false,title,pri,month,memo:''}))};
-const def=()=>({exam:'2026-11-19',items:seed()});
+const def=()=>({exam:'2026-11-19',items:seed(),cats:[]});
+const COLORS=['#9fb1c0','#a9b9a6','#c7aeab','#cdbf98','#b0aac4','#c6a995','#9dbab6','#b2aca4'];
+const catOf=it=>it.cat&&(S.cats||[]).find(c=>c.id===it.cat);
 let S;try{S=JSON.parse(localStorage.getItem(KEY))||def()}catch(e){S=def()}
-function norm(){if(S.items.some(i=>i.ord==null))[...S.items].sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created).forEach((it,k)=>{if(it.ord==null)it.ord=k+S.items.length})}
+function norm(){S.cats=S.cats||[];if(S.items.some(i=>i.ord==null))[...S.items].sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created).forEach((it,k)=>{if(it.ord==null)it.ord=k+S.items.length})}
 norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('저장 공간이 부족해요')}};
 save();
 
 /* ui state */
 const byPri=(a,b)=>a.done-b.done||b.pri-a.pri||a.ord-b.ord;
-let lastId=null,tab='home',hideDone=false,justId=null,fontName='',photoTarget=null;
+let catFilter=null,lastId=null,tab='home',hideDone=false,justId=null,fontName='',photoTarget=null;
 
 function dday(){
   const [y,m,d]=S.exam.split('-').map(Number);const t=new Date();t.setHours(0,0,0,0);
@@ -282,17 +292,19 @@ function itemHTML(it,drag){
   return `<div class="item ${it.pri===3?'hi':''} ${it.done?'done':''} ${it.id===justId?'just':''}" data-edit="${it.id}" data-id="${it.id}" data-k="${it.pri}${it.done?'d':''}">
     <button class="chk" data-chk="${it.id}" aria-label="완료"><svg viewBox="0 0 22 22"><path class="sq" d="M3.2 3.6L18.6 2.9L19.1 18.7L2.8 18.2Z"/><path class="ck" d="M5 11.2c1.4 1.3 2.8 2.8 4.2 4.6C11.6 11 14.6 7 19.5 2.6"/></svg></button>
     <div class="body"><span class="title">${esc(it.title)}</span>
-      <div class="meta">${esc(meta)}</div>
+      <div class="meta">${(c=>c?`<span class="tag" style="--c:${c.color}77">${esc(c.name)}</span>`:'')(catOf(it))}${esc(meta)}</div>
       ${it.memo?`<div class="memo">${esc(it.memo)}</div>`:''}</div>
     ${drag?`<span class="grab" data-grab="${it.id}" aria-label="순서 바꾸기">${grabSvg}</span>`:''}</div>`;
 }
 
 function renderList(){
-  const arr=S.items.filter(i=>!(hideDone&&i.done)).sort(byPri);
+  if(catFilter&&!S.cats.find(c=>c.id===catFilter))catFilter=null;
+  const arr=S.items.filter(i=>!(hideDone&&i.done)&&(!catFilter||i.cat===catFilter)).sort(byPri);
   const body=!arr.length?`<div class="empty">${pencilSvg}${S.items.length?'남은 할 일이 없어요':'수능 끝나고 할 일을<br>하나씩 적어보세요'}</div>`
     :MONTHS.map(k=>{const g=arr.filter(i=>i.month===k);
       return g.length?`<div class="group">${k}</div><div class="dragBox">${g.map(i=>itemHTML(i,true)).join('')}</div>`:''}).join('');
   $('#vList').innerHTML=`
+    ${S.cats.length?`<div class="chips"><div class="seg" id="catChips"><button data-cf="" class="${catFilter?'':'on'}">전체</button>${S.cats.map(c=>`<button data-cf="${c.id}" class="${catFilter===c.id?'on':''}"><span class="dot" style="--c:${c.color}"></span>${esc(c.name)}</button>`).join('')}</div></div>`:''}
     <div class="tools"><span></span>
       <label><input type="checkbox" class="tick" id="hideDone" ${hideDone?'checked':''}>끝낸 일 숨기기</label>
     </div>${body}`;
@@ -320,10 +332,11 @@ function bindSeg(){document.querySelectorAll('#sheet .seg').forEach(s=>s.onclick
 const segVal=id=>{const b=document.querySelector(`#${id} .on`);return b?b.dataset.v:null};
 
 function openEdit(id,preset={}){
-  const it=id?S.items.find(i=>i.id===id):{title:'',pri:2,month:'미정',memo:'',...preset};
+  const it=id?S.items.find(i=>i.id===id):{cat:catFilter,title:'',pri:2,month:'미정',memo:'',...preset};
   openSheet(`<h3>${id?'할 일 수정':'새 할 일'}</h3>
     <label>할 일<input type="text" id="fTitle" value="${esc(it.title)}" placeholder="예) 운전면허 따기"></label>
     <div class="lbl">중요도</div><div class="seg" id="fPri">${[1,2,3].map(n=>`<button data-v="${n}" class="${it.pri==n?'on':''}">${'★'.repeat(n)}</button>`).join('')}</div>
+    <div class="lbl">카테고리</div><div class="seg" id="fCat"><button data-v="" class="${it.cat?'':'on'}">없음</button>${S.cats.map(c=>`<button data-v="${c.id}" class="${it.cat===c.id?'on':''}"><span class="dot" style="--c:${c.color}"></span>${esc(c.name)}</button>`).join('')}</div>
     <div class="lbl">언제</div><div class="seg" id="fMonth">${MONTHS.map(m=>`<button data-v="${m}" class="${it.month===m?'on':''}">${m}</button>`).join('')}</div>
     <div class="row2"><label>날짜<input type="date" id="fDate" value="${esc(it.date||'')}"></label>
       <label>시간<input type="time" id="fTime" value="${esc(it.time||'')}"></label></div>
@@ -336,7 +349,7 @@ function openEdit(id,preset={}){
   if(!id)setTimeout(()=>$('#fTitle').focus(),320);
   $('#fSave').onclick=()=>{
     const title=$('#fTitle').value.trim();if(!title){toast('할 일을 적어주세요');return}
-    const data={title,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim(),
+    const data={title,cat:segVal('fCat')||null,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim(),
       date:$('#fDate').value,time:$('#fTime').value,place:$('#fPlace').value.trim()};
     if(id)Object.assign(it,data);else S.items.push({id:uid(),created:Date.now(),ord:Math.max(0,...S.items.map(i=>i.ord||0))+1,done:false,doneAt:null,photo:false,...data});
     save();closeSheet();render();
@@ -398,6 +411,9 @@ $('#importIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if
 function openSettings(){
   openSheet(`<h3>설정</h3>
     <label>수능 날짜<input type="date" id="sExam" value="${S.exam}"></label>
+    <div class="lbl" style="margin-top:22px">카테고리</div>
+    ${S.cats.map(c=>`<div class="cat-row" data-cat="${c.id}"><span><span class="dot" style="--c:${c.color}"></span>${esc(c.name)}</span><span class="meta" style="margin:0">${S.items.filter(i=>i.cat===c.id).length}개 ›</span></div>`).join('')}
+    <div class="cat-row"><span class="meta" style="margin:0">${S.cats.length?'':'아직 카테고리가 없어요'}</span><button class="mini" id="sCatAdd">+ 추가</button></div>
     <div class="set-row"><div>폰트<small>${esc(fontName||'기본 폰트')}</small></div>
       <div>${fontName?'<button class="mini" id="sFontReset">초기화</button>':''}<button class="mini" id="sFont">파일 선택</button></div></div>
     <div class="set-row"><div>백업<small>사진 포함 JSON 파일</small></div>
@@ -407,9 +423,27 @@ function openSettings(){
   $('#sExam').onchange=e=>{if(e.target.value){S.exam=e.target.value;save();render()}};
   $('#sFont').onclick=()=>$('#fontIn').click();
   if(fontName)$('#sFontReset').onclick=async()=>{await db.del('font');applyFont(null);openSettings();toast('기본 폰트로 돌아왔어요')};
+  $('#sCatAdd').onclick=()=>openCat(null);
+  document.querySelectorAll('[data-cat]').forEach(r=>r.onclick=()=>openCat(r.dataset.cat));
   $('#sExport').onclick=exportData;
   $('#sImport').onclick=()=>$('#importIn').click();
   $('#sPrint').onclick=()=>{closeSheet();const t=tab;tab='list';render();setTimeout(()=>{print();tab=t;render()},350)};
+}
+
+function openCat(id){
+  const c=id?S.cats.find(x=>x.id===id):{name:'',color:COLORS[S.cats.length%COLORS.length]};
+  openSheet(`<h3>${id?'카테고리 수정':'새 카테고리'}</h3>
+    <label>이름<input type="text" id="cName" value="${esc(c.name)}" placeholder="예) 여행"></label>
+    <div class="lbl">색상</div><div class="seg sw" id="cColor">${COLORS.map(v=>`<button data-v="${v}" style="--c:${v}" class="${c.color===v?'on':''}" aria-label="색상"></button>`).join('')}</div>
+    <div class="btns"><button class="btn" id="cBack">취소</button>${id?'<button class="btn danger" id="cDel">삭제</button>':''}<button class="btn pri" id="cSave">저장</button></div>`);
+  bindSeg();
+  if(!id)setTimeout(()=>$('#cName').focus(),320);
+  $('#cBack').onclick=openSettings;
+  $('#cSave').onclick=()=>{const name=$('#cName').value.trim();if(!name){toast('이름을 적어주세요');return}
+    const color=segVal('cColor')||c.color;
+    if(id)Object.assign(c,{name,color});else S.cats.push({id:uid(),name,color});save();render();openSettings()};
+  if(id)$('#cDel').onclick=()=>{if(!confirm('이 카테고리를 지울까요? 할 일은 남아요.'))return;
+    S.cats=S.cats.filter(x=>x.id!==id);S.items.forEach(i=>{if(i.cat===id)i.cat=null});save();render();openSettings()};
 }
 
 /* events */
@@ -417,6 +451,7 @@ document.addEventListener('click',e=>{
   const t=e.target;let el;
   if(el=t.closest('[data-tab]')){tab=el.dataset.tab;window.scrollTo(0,0);render();return}
   if(t.closest('[data-grab]'))return;
+  if(el=t.closest('[data-cf]')){catFilter=el.dataset.cf||null;render();return}
   if(el=t.closest('[data-chk]')){toggle(el.dataset.chk);return}
   if(el=t.closest('#pAdd')){photoTarget=el.dataset.id||lastId;$('#photoIn').click();return}
   if(t.closest('#pSkip')){closeSheet();return}
@@ -460,7 +495,7 @@ document.addEventListener('pointerdown',e=>{
 });
 
 /* auto update: Pages caches ~10min, so check for a newer build on open/resume */
-const VER='2026.11.12-3';
+const VER='2026.11.12-4';
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
