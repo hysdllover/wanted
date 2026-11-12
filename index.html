@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="수능 후 할 일">
+<meta name="theme-color" content="#f1eee7">
+<link rel="apple-touch-icon" id="touchIcon">
+<title>수능 후 할 일</title>
+<style>
+:root{
+  --paper:#f1eee7; --paper2:#ebe7dd; --line:#e2ddd2; --ink:#525a62; --ink2:#858b8f; --ink3:#b8b5ad;
+  --lead:#6f7880; --mark:rgba(214,200,160,.45); --tint:#e6e2d8;
+  --font:-apple-system,"Apple SD Gothic Neo",sans-serif;
+  --type:"American Typewriter","Courier New",ui-monospace,monospace;
+  --grain:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.8' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .32 0 0 0 0 .26 0 0 0 .1 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --fiber:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='turbulence' baseFrequency='.012 .25' numOctaves='2' seed='4'/%3E%3CfeColorMatrix values='0 0 0 0 .55 0 0 0 0 .5 0 0 0 0 .4 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23f)'/%3E%3C/svg%3E");
+  --squig:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='44' height='6'%3E%3Cpath d='M1 4Q6 1 11 3.5T21 3T31 3.6T43 2.6' fill='none' stroke='%23a9a69e' stroke-width='1.2'/%3E%3C/svg%3E");
+  --rules:repeating-linear-gradient(to bottom,transparent 0 27px,var(--line) 27px 28px);
+  --margin:linear-gradient(to right,transparent 0 11px,rgba(170,120,110,.22) 11px 12px,transparent 12px 14px,rgba(170,120,110,.14) 14px 15px,transparent 15px);
+  --age:radial-gradient(ellipse at 50% 40%,transparent 55%,rgba(150,130,95,.10) 100%);
+}
+*{box-sizing:border-box;margin:0;padding:0;border-radius:0!important;-webkit-tap-highlight-color:transparent}
+html,body{min-height:100%}
+body{font-family:var(--font);font-weight:300;font-size:14px;color:var(--ink);background-color:var(--paper);
+  background-image:var(--grain),var(--fiber),var(--margin),var(--rules);background-attachment:scroll;
+  text-shadow:0 0 .5px rgba(82,90,98,.55);
+  -webkit-user-select:none;user-select:none;overscroll-behavior:none;touch-action:manipulation;-webkit-text-size-adjust:100%}
+body::after{content:'';position:fixed;inset:0;background:var(--age);pointer-events:none;z-index:40}
+input,textarea,select,button{font:inherit;color:inherit;-webkit-appearance:none;appearance:none}
+button{cursor:pointer;background:none;border:none}
+.wrap{max-width:720px;margin:0 auto}
+
+header{position:sticky;top:0;z-index:5;background:var(--paper) var(--grain);
+  padding:calc(env(safe-area-inset-top) + 8px) 20px 8px}
+header .wrap{display:flex;align-items:center;justify-content:space-between}
+header h1{font-size:15px;font-weight:400;letter-spacing:.04em}
+.icon-btn{width:34px;height:34px;display:grid;place-items:center;color:var(--ink2)}
+.icon-btn svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.3}
+main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
+.view{display:none}.view.on{display:block}
+
+/* pencil box: rough border drawn on a pseudo layer */
+.box{position:relative;background:rgba(255,253,247,.45)}
+.box::before,.box::after{content:'';position:absolute;pointer-events:none}
+.box::before{inset:0;border:1.3px solid var(--lead);opacity:.75;filter:url(#rough)}
+.box::after{inset:2px -2px -2px 2px;border:1px solid var(--lead);opacity:.18;filter:url(#rough2)}
+.sec{font-size:11px;color:var(--ink2);letter-spacing:.16em;margin:24px 0 9px}
+.sec::after{content:'';display:inline-block;width:44px;height:6px;margin-left:8px;background:var(--squig);vertical-align:middle}
+
+/* home */
+.dday{text-align:center;padding:26px 0 20px}
+.dday small{display:block;font-size:11px;color:var(--ink2);letter-spacing:.2em}
+.dday b{display:inline-block;font-size:68px;font-weight:200;letter-spacing:-.02em;margin:4px 0 0;padding:0 10px;
+  background:linear-gradient(transparent 58%,var(--mark) 58% 88%,transparent 88%);transform:rotate(-.6deg)}
+.dday b::after{content:'';display:block;width:96px;height:7px;margin:2px auto 6px;
+  background:repeating-linear-gradient(-62deg,var(--ink3) 0 1px,transparent 1px 4px)}
+.dday span{display:block;font-family:var(--type);font-size:11.5px;color:var(--ink3);letter-spacing:.06em}
+.stamp{display:inline-block;margin-top:12px;padding:3px 9px;border:1.3px solid rgba(170,120,110,.55);color:rgba(160,110,100,.7);
+  font-family:var(--type);font-size:10.5px;letter-spacing:.18em;transform:rotate(-3deg);filter:url(#rough)}
+.prog{padding:16px 18px}
+.prog .top{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:10px}
+.prog .top span:last-child{font-family:var(--type)}
+.bar{position:relative;height:12px}
+.bar::before{content:'';position:absolute;inset:0;border:1.2px solid var(--lead);opacity:.6;filter:url(#rough)}
+.bar i{display:block;height:100%;background:repeating-linear-gradient(-55deg,var(--lead) 0 1.3px,transparent 1.3px 4.5px);opacity:.75;transition:width .6s;filter:url(#rough)}
+.pick{padding:18px}
+.pick .t{font-size:16px;line-height:1.5;margin-bottom:6px}
+.pick .m{font-family:var(--type);font-size:11.5px;color:var(--ink3)}
+.pick .acts{display:flex;justify-content:flex-end;margin-top:10px}
+.mini{position:relative;padding:5px 11px;font-size:12px;color:var(--ink2);margin-left:6px}
+.mini::before{content:'';position:absolute;inset:0;border:1.1px solid var(--lead);opacity:.55;filter:url(#rough);pointer-events:none}
+.months{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+.months button{padding:12px 0 10px}
+.months b{display:block;font-size:22px;font-weight:200}
+.months small{font-family:var(--type);font-size:11px;color:var(--ink2)}
+
+/* list */
+.tools{display:flex;justify-content:space-between;align-items:center;font-size:12px;color:var(--ink2);margin:4px 0}
+.tools select{font-size:12px;color:var(--ink2);background:none;border:none}
+.tools label{display:flex;align-items:center;gap:6px}
+.tick{width:14px;height:14px;border:1.1px solid var(--ink2);display:inline-grid;place-items:center}
+.tick:checked{background:var(--ink2) content-box;padding:2px}
+.group{font-family:var(--type);font-size:11px;color:var(--ink2);letter-spacing:.14em;margin:20px 0 0}
+.item{display:flex;gap:12px;align-items:flex-start;padding:13px 2px;
+  background:repeating-linear-gradient(to right,var(--ink3) 0 5px,transparent 5px 8px) no-repeat 0 100%/100% 1px}
+.chk{flex:none;width:24px;height:24px;display:grid;place-items:center;margin-top:-1px}
+.chk svg{width:24px;height:24px;fill:none;overflow:visible}
+.chk .sq{stroke:var(--lead);stroke-width:1.2;opacity:.85;filter:url(#rough)}
+.chk .ck{stroke:var(--ink);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round;stroke-dasharray:32;stroke-dashoffset:32;filter:url(#rough)}
+.done .chk .ck{stroke-dashoffset:0}
+.just .chk .ck{animation:draw .35s ease}
+@keyframes draw{from{stroke-dashoffset:32}}
+.body{flex:1;min-width:0}
+.title{line-height:1.5;-webkit-box-decoration-break:clone;box-decoration-break:clone;
+  background:linear-gradient(var(--ink2),var(--ink2)) no-repeat 0 54%/0 1.2px,linear-gradient(var(--ink3),var(--ink3)) no-repeat 3px 64%/0 1px}
+.done .title{background-size:100% 1.2px,calc(100% - 6px) 1px;color:var(--ink3)}
+.just .title{animation:strike .55s ease .1s backwards}
+@keyframes strike{from{background-size:0 1.2px,0 1px}}
+.hi .title{background:linear-gradient(transparent 55%,var(--mark) 55% 92%,transparent 92%)}
+.hi.done .title{background:linear-gradient(var(--ink2),var(--ink2)) no-repeat 0 54%/100% 1.2px,linear-gradient(var(--ink3),var(--ink3)) no-repeat 3px 64%/calc(100% - 6px) 1px}
+.meta{font-family:var(--type);font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.02em}
+.memo{font-size:12px;color:var(--ink2);margin-top:4px;white-space:pre-wrap}
+.empty{text-align:center;color:var(--ink3);font-size:13px;padding:60px 0;line-height:1.8}
+.empty .pen{display:block;width:70px;height:24px;margin:0 auto 14px;fill:none;stroke:var(--ink3);stroke-width:1.1}
+.fab{position:fixed;right:max(20px,calc(50% - 340px));bottom:calc(env(safe-area-inset-bottom) + 76px);width:52px;height:52px;
+  background:var(--paper);font-size:26px;font-weight:200;color:var(--ink);z-index:6;display:none}
+.fab::before{content:'';position:absolute;inset:0;border:1.4px solid var(--ink);filter:url(#rough)}
+.fab::after{content:'';position:absolute;inset:3px -3px -3px 3px;border:1px solid var(--ink3);z-index:-1;filter:url(#rough2)}
+.fab.on{display:block}
+
+/* records */
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:24px 14px;padding-top:16px}
+@media (min-width:700px){.grid{grid-template-columns:repeat(3,1fr);gap:28px 20px}}
+.card{position:relative;padding:8px 8px 14px;background:#fbf9f3;border:1px solid var(--line);
+  box-shadow:1px 2px 0 var(--line),0 7px 10px -8px rgba(90,80,60,.35);transform:rotate(var(--r))}
+.card::before{content:'';position:absolute;top:-9px;left:50%;width:56px;height:17px;transform:translateX(-50%) rotate(var(--tr,-3deg));
+  background:rgba(205,195,170,.5);border-left:1px dashed rgba(255,255,255,.7);border-right:1px dashed rgba(255,255,255,.7)}
+.card:nth-child(even)::before{--tr:4deg}
+.ph{aspect-ratio:1;background:repeating-linear-gradient(45deg,var(--tint) 0 3px,#efece4 3px 7px);display:grid;place-items:center;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover;filter:sepia(.22) saturate(.65) contrast(.93) brightness(1.04)}
+.ph svg{width:26px;height:26px;fill:none;stroke:var(--ink3);stroke-width:1.2}
+.card .t{font-size:12.5px;margin-top:8px;line-height:1.4}
+.card .d{font-family:var(--type);font-size:10.5px;color:var(--ink3);margin-top:3px}
+
+/* tabbar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;background:var(--paper) var(--grain);border-top:1px dashed var(--ink3);padding-bottom:env(safe-area-inset-bottom);z-index:7}
+.tabbar .wrap{display:flex}
+.tabbar button{flex:1;padding:13px 0 11px;font-size:12px;color:var(--ink3);letter-spacing:.08em}
+.tabbar button.on{color:var(--ink)}
+.tabbar button.on span{background:var(--squig) no-repeat 50% 100%/100% 5px;padding-bottom:6px}
+
+/* sheet */
+.back{position:fixed;inset:0;background:rgba(70,66,58,.22);opacity:0;pointer-events:none;transition:opacity .25s;z-index:20}
+.back.on{opacity:1;pointer-events:auto}
+.sheet{position:fixed;left:0;right:0;bottom:0;max-width:720px;margin:0 auto;max-height:90vh;overflow-y:auto;background-color:var(--paper);
+  background-image:var(--grain),var(--fiber),var(--margin),var(--rules);border-top:1.2px solid var(--ink3);
+  padding:10px 22px calc(env(safe-area-inset-bottom) + 22px);
+  transform:translateY(105%);transition:transform .3s cubic-bezier(.2,.8,.2,1);z-index:21}
+.sheet.on{transform:none}
+.grip{border-top:1.4px dashed var(--ink3);margin:4px 0 18px}
+.sheet h3{font-size:15px;font-weight:400;margin-bottom:6px}
+.sheet label,.lbl{display:block;font-size:11px;color:var(--ink2);letter-spacing:.06em;margin:16px 0 6px}
+.sheet label input,.sheet label textarea{display:block;width:100%;margin-top:6px;color:var(--ink)}
+input[type=text],input[type=date],textarea{font-size:16px;font-weight:300;border:none;border-bottom:1.2px dashed var(--ink3);
+  background:transparent;padding:6px 2px;outline:none;-webkit-user-select:text;user-select:text}
+input[type=date]{min-height:34px}
+textarea{border:1.2px solid var(--ink3);padding:10px;resize:none;background:rgba(255,253,247,.5)}
+.seg{display:flex;flex-wrap:wrap;gap:6px}
+.seg button{position:relative;padding:6px 12px;font-size:12px;color:var(--ink2)}
+.seg button::before{content:'';position:absolute;inset:0;border:1.2px solid var(--lead);opacity:.55;filter:url(#rough)}
+.seg button.on{background:var(--ink);color:var(--paper)}
+.btns{display:flex;gap:8px;margin-top:24px}
+.btn{position:relative;flex:1;padding:12px;font-size:14px}
+.btn::before{content:'';position:absolute;inset:0;border:1.3px solid var(--ink);filter:url(#rough);pointer-events:none}
+.btn.pri{background:var(--ink);color:var(--paper)}
+.btn.danger{color:#9a8282;flex:.5}.btn.danger::before{border-color:#b8a2a0}
+.set-row{display:flex;justify-content:space-between;align-items:center;padding:14px 0;
+  background:repeating-linear-gradient(to right,var(--ink3) 0 5px,transparent 5px 8px) no-repeat 0 100%/100% 1px}
+.set-row small{display:block;font-size:11px;color:var(--ink3);margin-top:2px}
+.big-ph{aspect-ratio:1;margin:8px 0 12px;background:#fbf9f3;padding:8px;border:1px solid var(--line)}
+.big-ph .ph{height:100%}
+.toast{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom) + 86px);transform:translate(-50%,20px);opacity:0;
+  background:var(--ink);color:var(--paper);font-size:12px;padding:8px 14px;transition:.25s;z-index:30;pointer-events:none}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.hidden{display:none}
+
+@media print{
+  @page{size:A4;margin:16mm}
+  body{background:#fff;font-size:11pt}
+  body::after,header .icon-btn,.tabbar,.fab,.back,.sheet,.tools,.toast{display:none!important}
+  header{position:static;padding:0 0 4mm;background:none}
+  main{padding:0}.wrap{max-width:none}
+  .view{display:none!important}#vList{display:block!important}
+  .item{break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <filter id="rough" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".04" numOctaves="2" seed="3"/><feDisplacementMap in="SourceGraphic" scale="1.6"/></filter>
+  <filter id="rough2" x="-10%" y="-10%" width="120%" height="120%"><feTurbulence type="fractalNoise" baseFrequency=".06" numOctaves="2" seed="9"/><feDisplacementMap in="SourceGraphic" scale="2"/></filter>
+</svg>
+<header><div class="wrap">
+  <h1 id="hTitle">수능 후 할 일</h1>
+  <button class="icon-btn" id="btnSet" aria-label="설정"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2.8v2.4M12 18.8v2.4M2.8 12h2.4M18.8 12h2.4M5.5 5.5l1.7 1.7M16.8 16.8l1.7 1.7M5.5 18.5l1.7-1.7M16.8 7.2l1.7-1.7"/></svg></button>
+</div></header>
+
+<main class="wrap">
+  <section class="view on" id="vHome"></section>
+  <section class="view" id="vList"></section>
+  <section class="view" id="vRec"></section>
+</main>
+
+<button class="fab" id="fab" aria-label="추가">+</button>
+<nav class="tabbar"><div class="wrap">
+  <button data-tab="home" class="on"><span>홈</span></button>
+  <button data-tab="list"><span>할 일</span></button>
+  <button data-tab="rec"><span>기록</span></button>
+</div></nav>
+
+<div class="back" id="back"></div>
+<div class="sheet" id="sheet"></div>
+<div class="toast" id="toast"></div>
+
+<input type="file" id="photoIn" accept="image/*" class="hidden">
+<input type="file" id="fontIn" class="hidden">
+<input type="file" id="importIn" accept=".json,application/json" class="hidden">
+
+<script>
+const KEY='suneung-todo.v1';
+const MONTHS=['12월','1월','2월','미정'];
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pad=n=>String(n).padStart(2,'0');
+const todayStr=()=>{const d=new Date();return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`};
+const dot=s=>s?s.replace(/-/g,'.'):'';
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,6);
+
+/* storage */
+const db=(()=>{let p;
+  const open=()=>p||(p=new Promise((res,rej)=>{const r=indexedDB.open('suneung-todo',1);
+    r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)}));
+  const tx=async(mode,fn)=>{const d=await open();return new Promise((res,rej)=>{const t=d.transaction('kv',mode);const r=fn(t.objectStore('kv'));
+    t.oncomplete=()=>res(r&&r.result);t.onerror=()=>rej(t.error)})};
+  return{get:k=>tx('readonly',s=>s.get(k)),set:(k,v)=>tx('readwrite',s=>s.put(v,k)),del:k=>tx('readwrite',s=>s.delete(k))}})();
+const seed=()=>{const t=Date.now();return[
+  ['운전면허 따기',3,'12월'],['바다 보러 가기',3,'12월'],['머리 하기',2,'12월'],['밀린 드라마 몰아보기',1,'미정'],
+  ['책 열 권 읽기',2,'1월'],['아르바이트 구하기',2,'1월'],['가족 여행',3,'2월']
+].map(([title,pri,month],i)=>({id:uid()+i,created:t+i,done:false,doneAt:null,photo:false,title,pri,month,memo:''}))};
+const def=()=>({exam:'2026-11-19',items:seed()});
+let S;try{S=JSON.parse(localStorage.getItem(KEY))||def()}catch(e){S=def()}
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('저장 공간이 부족해요')}};
+save();
+
+/* ui state */
+let lastId=null,tab='home',sort='pri',hideDone=false,justId=null,pickId=null,fontName='',photoTarget=null;
+
+function dday(){
+  const [y,m,d]=S.exam.split('-').map(Number);const t=new Date();t.setHours(0,0,0,0);
+  return Math.round((new Date(y,m-1,d)-t)/864e5);
+}
+
+/* render */
+function render(){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  $({home:'#vHome',list:'#vList',rec:'#vRec'}[tab]).classList.add('on');
+  document.querySelectorAll('.tabbar button').forEach(b=>b.classList.toggle('on',b.dataset.tab===tab));
+  $('#fab').classList.toggle('on',tab!=='rec');
+  $('#hTitle').textContent={home:'수능 후 할 일',list:'할 일',rec:'끝낸 일'}[tab];
+  ({home:renderHome,list:renderList,rec:renderRec})[tab]();
+  justId=null;
+}
+
+function renderHome(){
+  const n=dday(),total=S.items.length,done=S.items.filter(i=>i.done).length;
+  const big=n>0?`D-${n}`:n===0?'D-DAY':`D+${-n}`;
+  const lbl=n>0?'수능까지':n===0?'오늘은 수능':'수능 끝, 하나씩 해보기';
+  const undone=S.items.filter(i=>!i.done);
+  if(!undone.find(i=>i.id===pickId))pickId=undone.length?undone[Math.random()*undone.length|0].id:null;
+  const p=S.items.find(i=>i.id===pickId);
+  $('#vHome').innerHTML=`
+    <div class="dday"><small>${lbl}</small><b>${big}</b><span>${dot(S.exam)}</span>
+      ${total&&done===total?'<div><span class="stamp">ALL DONE</span></div>':''}</div>
+    <div class="box prog"><div class="top"><span>끝낸 일</span><span>${done} / ${total}</span></div>
+      <div class="bar"><i style="width:${total?done/total*100:0}%"></i></div></div>
+    <div class="sec">오늘 해볼 일</div>
+    <div class="box pick">${p?`<div class="t">${esc(p.title)}</div>
+      <div class="m">${'★'.repeat(p.pri)}${p.month!=='미정'?' · '+p.month:''}</div>
+      <div class="acts"><button class="mini" data-act="repick">다시 뽑기</button><button class="mini" data-edit="${p.id}">보기</button></div>`
+      :`<div class="m" style="text-align:center;padding:8px 0">${total?'모두 끝냈어요':'아직 적은 할 일이 없어요'}</div>`}</div>
+    <div class="sec">언제 할까</div>
+    <div class="months">${MONTHS.map(m=>`<button class="box" data-month="${m}"><b>${S.items.filter(i=>!i.done&&i.month===m).length}</b><small>${m}</small></button>`).join('')}</div>`;
+}
+
+function itemHTML(it){
+  const meta=['★'.repeat(it.pri),it.month!=='미정'&&it.month,it.done&&dot(it.doneAt)].filter(Boolean).join(' · ');
+  return `<div class="item ${it.pri===3?'hi':''} ${it.done?'done':''} ${it.id===justId?'just':''}" data-edit="${it.id}">
+    <button class="chk" data-chk="${it.id}" aria-label="완료"><svg viewBox="0 0 22 22"><path class="sq" d="M3.2 3.6L18.6 2.9L19.1 18.7L2.8 18.2Z"/><path class="ck" d="M5 11.2c1.4 1.3 2.8 2.8 4.2 4.6C11.6 11 14.6 7 19.5 2.6"/></svg></button>
+    <div class="body"><span class="title">${esc(it.title)}</span>
+      <div class="meta">${esc(meta)}</div>
+      ${it.memo?`<div class="memo">${esc(it.memo)}</div>`:''}</div></div>`;
+}
+
+function renderList(){
+  const by=(a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created;
+  const arr=S.items.filter(i=>!(hideDone&&i.done)).sort(by);
+  let body='';
+  if(!arr.length)body=`<div class="empty">${pencilSvg}${S.items.length?'남은 할 일이 없어요':'수능 끝나고 할 일을<br>하나씩 적어보세요'}</div>`;
+  else if(sort==='pri')body=arr.map(itemHTML).join('');
+  else body=MONTHS.map(k=>{const g=arr.filter(i=>i.month===k);
+      return g.length?`<div class="group">${k}</div>${g.map(itemHTML).join('')}`:''}).join('');
+  $('#vList').innerHTML=`
+    <div class="tools">
+      <select id="sortSel"><option value="pri">중요한 순 ▾</option><option value="month">월별 ▾</option></select>
+      <label><input type="checkbox" class="tick" id="hideDone" ${hideDone?'checked':''}>끝낸 일 숨기기</label>
+    </div>${body}`;
+  $('#sortSel').value=sort;
+}
+
+function renderRec(){
+  const arr=S.items.filter(i=>i.done).sort((a,b)=>(b.doneAt||'').localeCompare(a.doneAt||''));
+  if(!arr.length){$('#vRec').innerHTML=`<div class="empty">${pencilSvg}아직 끝낸 일이 없어요</div>`;return}
+  $('#vRec').innerHTML=`<div class="grid">${arr.map((it,i)=>`
+    <div class="card" style="--r:${[-1,.8,-.4,1.1][i%4]}deg" data-rec="${it.id}">
+      <div class="ph" data-ph="${it.id}">${camSvg}</div>
+      <div class="t">${esc(it.title)}</div><div class="d">${dot(it.doneAt)}</div></div>`).join('')}</div>`;
+  arr.filter(i=>i.photo).forEach(async it=>{const p=await db.get('p:'+it.id);const el=document.querySelector(`[data-ph="${it.id}"]`);if(p&&el)el.innerHTML=`<img src="${p}" alt="">`});
+}
+const pencilSvg='<svg class="pen" viewBox="0 0 60 20"><path d="M4 15L46 4l8 3-40 11z"/><path d="M46 4l2 7M4 15l3 2"/><path d="M2 19h40" stroke-dasharray="2 3"/></svg>';
+const camSvg='<svg viewBox="0 0 24 24"><path d="M4 8h3l1.5-2h7L17 8h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>';
+
+/* sheet */
+function openSheet(html){$('#sheet').innerHTML='<div class="grip"></div>'+html;$('#sheet').scrollTop=0;$('#back').classList.add('on');$('#sheet').classList.add('on')}
+function closeSheet(){$('#back').classList.remove('on');$('#sheet').classList.remove('on');document.activeElement&&document.activeElement.blur()}
+$('#back').onclick=closeSheet;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('on');clearTimeout(t._t);t._t=setTimeout(()=>t.classList.remove('on'),1600)}
+function bindSeg(){document.querySelectorAll('#sheet .seg').forEach(s=>s.onclick=e=>{const b=e.target.closest('button');if(!b)return;
+  s.querySelectorAll('button').forEach(x=>x.classList.remove('on'));b.classList.add('on')})}
+const segVal=id=>{const b=document.querySelector(`#${id} .on`);return b?b.dataset.v:null};
+
+function openEdit(id,preset={}){
+  const it=id?S.items.find(i=>i.id===id):{title:'',pri:2,month:'미정',memo:'',...preset};
+  openSheet(`<h3>${id?'할 일 수정':'새 할 일'}</h3>
+    <label>할 일<input type="text" id="fTitle" value="${esc(it.title)}" placeholder="예) 운전면허 따기"></label>
+    <div class="lbl">중요도</div><div class="seg" id="fPri">${[1,2,3].map(n=>`<button data-v="${n}" class="${it.pri==n?'on':''}">${'★'.repeat(n)}</button>`).join('')}</div>
+    <div class="lbl">언제</div><div class="seg" id="fMonth">${MONTHS.map(m=>`<button data-v="${m}" class="${it.month===m?'on':''}">${m}</button>`).join('')}</div>
+    <label>메모<textarea id="fMemo" rows="3">${esc(it.memo)}</textarea></label>
+    <div class="btns">${id?'<button class="btn danger" id="fDel">삭제</button>':''}<button class="btn pri" id="fSave">저장</button></div>`);
+  bindSeg();
+  if(!id)setTimeout(()=>$('#fTitle').focus(),320);
+  $('#fSave').onclick=()=>{
+    const title=$('#fTitle').value.trim();if(!title){toast('할 일을 적어주세요');return}
+    const data={title,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim()};
+    if(id)Object.assign(it,data);else S.items.push({id:uid(),created:Date.now(),done:false,doneAt:null,photo:false,...data});
+    save();closeSheet();render();
+  };
+  if(id)$('#fDel').onclick=async()=>{if(!confirm('이 할 일을 지울까요?'))return;
+    S.items=S.items.filter(i=>i.id!==id);if(it.photo)await db.del('p:'+id);save();closeSheet();render()};
+}
+
+function toggle(id){
+  lastId=id;const it=S.items.find(i=>i.id===id);it.done=!it.done;it.doneAt=it.done?todayStr():null;
+  save();justId=it.done?id:null;render();
+  if(it.done)setTimeout(()=>openSheet(`<h3>끝!</h3><div class="memo" style="margin:4px 0 0">${esc(it.title)}</div>
+    <div class="btns"><button class="btn" id="pSkip">나중에</button><button class="btn pri" id="pAdd">사진 남기기</button></div>`),550);
+}
+
+async function openRec(id){
+  const it=S.items.find(i=>i.id===id);const p=it.photo?await db.get('p:'+id):null;
+  openSheet(`<h3>${esc(it.title)}</h3><div class="meta">${dot(it.doneAt)} 끝냄</div>
+    <div class="big-ph"><div class="ph">${p?`<img src="${p}" alt="">`:camSvg}</div></div>
+    <div class="btns"><button class="btn danger" id="rUndo">되돌리기</button>
+      ${p?'<button class="btn" id="rDelPh">사진 삭제</button>':''}<button class="btn pri" id="pAdd" data-id="${id}">${p?'사진 변경':'사진 추가'}</button></div>`);
+  $('#rUndo').onclick=()=>{it.done=false;it.doneAt=null;save();closeSheet();render()};
+  if(p)$('#rDelPh').onclick=async()=>{await db.del('p:'+id);it.photo=false;save();closeSheet();render()};
+}
+
+function compress(file){return new Promise((res,rej)=>{const img=new Image(),u=URL.createObjectURL(file);
+  img.onload=()=>{const s=Math.min(1,1080/Math.max(img.width,img.height)),c=document.createElement('canvas');
+    c.width=img.width*s|0;c.height=img.height*s|0;c.getContext('2d').drawImage(img,0,0,c.width,c.height);URL.revokeObjectURL(u);res(c.toDataURL('image/jpeg',.82))};
+  img.onerror=rej;img.src=u})}
+$('#photoIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f||!photoTarget)return;
+  try{const d=await compress(f);await db.set('p:'+photoTarget,d);S.items.find(i=>i.id===photoTarget).photo=true;save();closeSheet();tab='rec';render();toast('사진을 남겼어요')}
+  catch(err){toast('사진을 불러올 수 없어요')}};
+
+/* font */
+async function applyFont(rec){
+  if(!rec){document.documentElement.style.removeProperty('--font');fontName='';return}
+  try{const f=new FontFace('UserFont',rec.buf);await f.load();document.fonts.add(f);
+    document.documentElement.style.setProperty('--font',`'UserFont',-apple-system,"Apple SD Gothic Neo",sans-serif`);fontName=rec.name}
+  catch(e){toast('폰트를 읽을 수 없어요');throw e}
+}
+$('#fontIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  const rec={name:f.name,buf:await f.arrayBuffer()};
+  try{await applyFont(rec);await db.set('font',rec);toast('폰트를 적용했어요');openSettings()}catch(err){}};
+
+/* backup */
+async function exportData(){
+  const photos={};for(const it of S.items)if(it.photo){const p=await db.get('p:'+it.id);if(p)photos[it.id]=p}
+  const name=`todo-${todayStr()}.json`,blob=new Blob([JSON.stringify({v:1,S,photos})],{type:'application/json'});
+  const file=new File([blob],name,{type:'application/json'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){try{await navigator.share({files:[file]});return}catch(e){if(e.name==='AbortError')return}}
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=name;a.click();
+}
+$('#importIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{const d=JSON.parse(await f.text());if(!d.S||!Array.isArray(d.S.items))throw 0;
+    if(!confirm('지금 데이터를 백업 파일로 바꿀까요?'))return;
+    S=d.S;for(const [id,p] of Object.entries(d.photos||{}))await db.set('p:'+id,p);save();closeSheet();render();toast('불러왔어요')}
+  catch(err){toast('백업 파일이 아니에요')}};
+
+function openSettings(){
+  openSheet(`<h3>설정</h3>
+    <label>수능 날짜<input type="date" id="sExam" value="${S.exam}"></label>
+    <div class="set-row"><div>폰트<small>${esc(fontName||'기본 폰트')}</small></div>
+      <div>${fontName?'<button class="mini" id="sFontReset">초기화</button>':''}<button class="mini" id="sFont">파일 선택</button></div></div>
+    <div class="set-row"><div>백업<small>사진 포함 JSON 파일</small></div>
+      <div><button class="mini" id="sImport">가져오기</button><button class="mini" id="sExport">내보내기</button></div></div>
+    <div class="set-row"><div>인쇄<small>A4 체크리스트</small></div>
+      <div><button class="mini" id="sPrint">인쇄</button></div></div>`);
+  $('#sExam').onchange=e=>{if(e.target.value){S.exam=e.target.value;save();render()}};
+  $('#sFont').onclick=()=>$('#fontIn').click();
+  if(fontName)$('#sFontReset').onclick=async()=>{await db.del('font');applyFont(null);openSettings();toast('기본 폰트로 돌아왔어요')};
+  $('#sExport').onclick=exportData;
+  $('#sImport').onclick=()=>$('#importIn').click();
+  $('#sPrint').onclick=()=>{closeSheet();const t=tab;tab='list';render();setTimeout(()=>{print();tab=t;render()},350)};
+}
+
+/* events */
+document.addEventListener('click',e=>{
+  const t=e.target;let el;
+  if(el=t.closest('[data-tab]')){tab=el.dataset.tab;window.scrollTo(0,0);render();return}
+  if(el=t.closest('[data-chk]')){toggle(el.dataset.chk);return}
+  if(el=t.closest('#pAdd')){photoTarget=el.dataset.id||lastId;$('#photoIn').click();return}
+  if(t.closest('#pSkip')){closeSheet();return}
+  if(el=t.closest('[data-edit]')){openEdit(el.dataset.edit);return}
+  if(el=t.closest('[data-rec]')){openRec(el.dataset.rec);return}
+  if(el=t.closest('[data-month]')){tab='list';sort='month';render();return}
+  if(t.closest('[data-act="repick"]')){const u=S.items.filter(i=>!i.done&&i.id!==pickId);if(u.length)pickId=u[Math.random()*u.length|0].id;render();return}
+  if(t.closest('#fab')){openEdit(null);return}
+  if(t.closest('#btnSet')){openSettings();return}
+});
+document.addEventListener('change',e=>{
+  if(e.target.id==='sortSel'){sort=e.target.value;render()}
+  if(e.target.id==='hideDone'){hideDone=e.target.checked;render()}
+});
+
+/* home-screen icon */
+(function(){const c=document.createElement('canvas');c.width=c.height=180;const x=c.getContext('2d');
+  x.fillStyle='#f1eee7';x.fillRect(0,0,180,180);x.strokeStyle='#e2ddd2';x.lineWidth=2;
+  for(let y=30;y<180;y+=28){x.beginPath();x.moveTo(0,y);x.lineTo(180,y);x.stroke()}
+  x.strokeStyle='rgba(170,120,110,.35)';x.beginPath();x.moveTo(26,0);x.lineTo(26,180);x.stroke();
+  x.strokeStyle='#6f7880';x.lineWidth=4;x.beginPath();x.moveTo(43,46);x.lineTo(137,43);x.lineTo(139,139);x.lineTo(41,137);x.closePath();x.stroke();
+  x.strokeStyle='#525a62';x.lineWidth=9;x.lineCap='round';x.lineJoin='round';
+  x.beginPath();x.moveTo(62,94);x.quadraticCurveTo(72,102,82,116);x.quadraticCurveTo(98,86,128,58);x.stroke();
+  $('#touchIcon').href=c.toDataURL('image/png')})();
+
+/* init */
+db.get('font').then(r=>r&&applyFont(r)).catch(()=>{}).finally(render);
+render();
+</script>
+</body>
+</html>
