@@ -424,6 +424,13 @@ document.addEventListener('change',e=>{
   x.beginPath();x.moveTo(62,94);x.quadraticCurveTo(72,102,82,116);x.quadraticCurveTo(98,86,128,58);x.stroke();
   $('#touchIcon').href=c.toDataURL('image/png')})();
 
+/* auto update: Pages caches ~10min, so check for a newer build on open/resume */
+const VER='2026.11.12-1';
+async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
+  const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
+checkUpdate();
+
 /* init */
 db.get('font').then(r=>r&&applyFont(r)).catch(()=>{}).finally(render);
 render();
