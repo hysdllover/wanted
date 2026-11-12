@@ -118,7 +118,8 @@ main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
 @keyframes strike{from{background-size:0 1.2px,0 1px}}
 .hi:not(.done) .title{background:linear-gradient(transparent 55%,var(--mark) 55% 92%,transparent 92%)!important}
 .meta{font-size:11px;color:var(--ink3);margin-top:4px;letter-spacing:.02em}
-.lnk{color:var(--ink2);text-decoration:none;background:linear-gradient(var(--ink3),var(--ink3)) no-repeat 0 100%/100% 1px}
+.lnk{display:inline-block;padding:7px 8px;margin:-7px -8px -7px -4px;color:var(--ink2);font-size:11px}
+.lnk u{text-decoration:none;background:linear-gradient(var(--ink3),var(--ink3)) no-repeat 0 100%/100% 1px}
 .subs{margin-top:6px}
 .sub{display:flex;gap:7px;align-items:center;font-size:12.5px;color:var(--ink2);padding:3px 0;text-align:left}
 .sub i{flex:none;width:12px;height:12px;border:1px solid var(--lead);opacity:.8;position:relative}
@@ -390,7 +391,7 @@ function itemHTML(it,drag){
   return `<div class="item ${it.pri===3?'hi':''} ${it.done?'done':''} ${it.id===justId?'just':''}"${pen} data-edit="${it.id}" data-id="${it.id}" data-k="${it.pri}${it.done?'d':''}">
     <button class="chk" data-chk="${it.id}" aria-label="완료"><svg viewBox="0 0 22 22"><path class="sq" d="M3.2 3.6L18.6 2.9L19.1 18.7L2.8 18.2Z"/><path class="ck" d="M5 11.2c1.4 1.3 2.8 2.8 4.2 4.6C11.6 11 14.6 7 19.5 2.6"/></svg></button>
     <div class="body"><span class="title">${esc(it.title)}</span>
-      <div class="meta">${c?`<span class="tag" style="--c:${c.color}77">${esc(c.name)}</span>`:''}${esc(meta)}${it.link?` · <a class="lnk" href="${esc(it.link)}" target="_blank" rel="noopener">${esc(host(it.link))} ↗</a>`:''}</div>
+      <div class="meta">${c?`<span class="tag" style="--c:${c.color}77">${esc(c.name)}</span>`:''}${esc(meta)}${it.link?` · <button class="lnk" data-open="${esc(it.link)}"><u>${esc(host(it.link))} ↗</u></button>`:''}</div>
       ${subs.length&&!it.done?`<div class="subs">${subs.map((x,k)=>`<button class="sub ${x.d?'on':''}" data-sub="${it.id}|${k}"><i></i>${esc(x.t)}</button>`).join('')}</div>`:''}
       ${it.memo?`<div class="memo">${esc(it.memo)}</div>`:''}</div>
     ${drag?`<span class="grab" data-grab="${it.id}" aria-label="순서 바꾸기">${grabSvg}</span>`:''}</div>`;
@@ -462,7 +463,7 @@ function openEdit(id,preset={}){
       <label>시간<input type="time" id="fTime" value="${esc(it.time||'')}"></label></div>
     <label>장소<input type="text" id="fPlace" value="${esc(it.place||'')}" placeholder="선택"></label>
     <div class="row2"><label>예산 (₩)<input type="text" inputmode="numeric" id="fCost" value="${it.cost||''}" placeholder="예) 50000"></label>
-      <label>링크<input type="text" inputmode="url" id="fLink" value="${esc(it.link||'')}" placeholder="선택"></label></div>
+      <label>링크${it.link?` <button class="lnk" data-open="${esc(it.link)}" style="float:right;margin:-7px -8px 0 0"><u>열기 ↗</u></button>`:''}<input type="text" inputmode="url" id="fLink" value="${esc(it.link||'')}" placeholder="선택"></label></div>
     <div class="lbl">세부 단계</div><div id="fSubs">${(it.subs||[]).map(subRow).join('')}</div>
     <button class="mini" id="fSubAdd" style="margin:6px 0 0">+ 단계</button>
     <label>메모<textarea id="fMemo" rows="3">${esc(it.memo)}</textarea></label>
@@ -636,8 +637,14 @@ function showCover(){const u=S.ui;if(!u.cover)return;
   const c=$('#cover');c.classList.remove('hidden','open');
   c.onclick=()=>{c.classList.add('open');setTimeout(()=>c.classList.add('hidden'),800)}}
 
+function openLink(u){
+  const w=window.open(u,'_blank');
+  if(!w){const a=document.createElement('a');a.href=u;a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove()}
+}
+
 /* events */
 document.addEventListener('click',e=>{
+  {const o=e.target.closest('[data-open]');if(o){e.preventDefault();openLink(o.dataset.open);return}}
   if(e.target.closest('#sheet'))return;
   const t=e.target;let el;
   if(t.closest('a'))return;
@@ -695,7 +702,7 @@ document.addEventListener('pointerdown',e=>{
 });
 
 /* auto update: Pages caches ~10min, so check for a newer build on open/resume */
-const VER='2026.11.12-6';
+const VER='2026.11.12-7';
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
