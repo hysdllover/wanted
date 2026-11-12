@@ -65,10 +65,7 @@ main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
 .bar{position:relative;height:12px}
 .bar::before{content:'';position:absolute;inset:0;border:1px solid var(--lead);opacity:.6;filter:url(#rough)}
 .bar i{display:block;height:100%;background:repeating-linear-gradient(-55deg,var(--lead) 0 1px,transparent 1px 4px);opacity:.6;transition:width .6s;filter:url(#rough)}
-.pick{padding:18px}
-.pick .t{font-size:16px;line-height:1.5;margin-bottom:6px}
-.pick .m{font-size:11.5px;color:var(--ink3)}
-.pick .acts{display:flex;justify-content:flex-end;margin-top:10px}
+.none{font-size:12px;color:var(--ink3);padding:10px 2px}
 .mini{position:relative;padding:5px 11px;font-size:12px;color:var(--ink2);margin-left:6px}
 .mini::before{content:'';position:absolute;inset:0;border:1px solid var(--lead);opacity:.55;filter:url(#rough);pointer-events:none}
 .months{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
@@ -233,7 +230,7 @@ const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('
 save();
 
 /* ui state */
-let lastId=null,tab='home',sort='pri',hideDone=false,justId=null,pickId=null,fontName='',photoTarget=null;
+let lastId=null,tab='home',sort='pri',hideDone=false,justId=null,fontName='',photoTarget=null;
 
 function dday(){
   const [y,m,d]=S.exam.split('-').map(Number);const t=new Date();t.setHours(0,0,0,0);
@@ -255,19 +252,15 @@ function renderHome(){
   const n=dday(),total=S.items.length,done=S.items.filter(i=>i.done).length;
   const big=n>0?`D-${n}`:n===0?'D-DAY':`D+${-n}`;
   const lbl=n>0?'수능까지':n===0?'오늘은 수능':'수능 끝, 하나씩 해보기';
-  const undone=S.items.filter(i=>!i.done);
-  if(!undone.find(i=>i.id===pickId))pickId=undone.length?undone[Math.random()*undone.length|0].id:null;
-  const p=S.items.find(i=>i.id===pickId);
+  const cm=(new Date().getMonth()+1)+'월';
+  const mine=S.items.filter(i=>i.month===cm).sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created);
   $('#vHome').innerHTML=`
     <div class="dday"><small>${lbl}</small><b>${big}</b><span>${dot(S.exam)}</span>
       ${total&&done===total?'<div><span class="stamp">ALL DONE</span></div>':''}</div>
     <div class="box prog"><div class="top"><span>끝낸 일</span><span>${done} / ${total}</span></div>
       <div class="bar"><i style="width:${total?done/total*100:0}%"></i></div></div>
-    <div class="sec">오늘 해볼 일</div>
-    <div class="box pick">${p?`<div class="t">${esc(p.title)}</div>
-      <div class="m">${'★'.repeat(p.pri)}${p.month!=='미정'?' · '+p.month:''}</div>
-      <div class="acts"><button class="mini" data-act="repick">다시 뽑기</button><button class="mini" data-edit="${p.id}">보기</button></div>`
-      :`<div class="m" style="text-align:center;padding:8px 0">${total?'모두 끝냈어요':'아직 적은 할 일이 없어요'}</div>`}</div>
+    <div class="sec">이번 달 할 일 · ${cm}</div>
+    ${mine.length?mine.map(itemHTML).join(''):`<div class="none">${cm}에 적은 할 일이 없어요</div>`}
     <div class="sec">언제 할까</div>
     <div class="months">${MONTHS.map(m=>`<button class="box" data-month="${m}"><b>${S.items.filter(i=>!i.done&&i.month===m).length}</b><small>${m}</small></button>`).join('')}</div>`;
 }
@@ -415,7 +408,6 @@ document.addEventListener('click',e=>{
   if(el=t.closest('[data-edit]')){openEdit(el.dataset.edit);return}
   if(el=t.closest('[data-rec]')){openRec(el.dataset.rec);return}
   if(el=t.closest('[data-month]')){tab='list';sort='month';render();return}
-  if(t.closest('[data-act="repick"]')){const u=S.items.filter(i=>!i.done&&i.id!==pickId);if(u.length)pickId=u[Math.random()*u.length|0].id;render();return}
   if(t.closest('#fab')){openEdit(null);return}
   if(t.closest('#btnSet')){openSettings();return}
 });
