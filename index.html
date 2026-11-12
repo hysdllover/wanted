@@ -296,7 +296,7 @@ const toDate=s=>{const [y,m,d]=s.split('-').map(Number);return new Date(y,m-1,d)
 const daysTo=s=>{const t=new Date();t.setHours(0,0,0,0);return Math.round((toDate(s)-t)/864e5)};
 const addDays=(s,n)=>{const d=toDate(s);d.setDate(d.getDate()+n);return ymd(d)};
 const monthOf=ds=>{const m=+ds.split('-')[1]+'월';return MONTHS.includes(m)?m:'미정'};
-const fmtWon=n=>!n?'':n>=10000?`${+(n/10000).toFixed(1)}만원`:`${n.toLocaleString()}원`;
+const fmtWon=n=>!n?'':`₩${n.toLocaleString()}`;
 const WK='일월화수목금토';
 const fmtDate=d=>{const x=toDate(d);return `${x.getMonth()+1}.${x.getDate()}(${WK[x.getDay()]})`};
 
@@ -373,7 +373,7 @@ function renderHome(){
         <div class="bar"><i style="width:${total?done/total*100:0}%"></i></div></div>
       <div class="row"><div class="top"><span>자유 시간</span><span>${freeTxt}</span></div>
         <div class="bar"><i style="width:${passed/span*100}%"></i></div></div>
-      ${all?`<div class="note"><span>예산</span><span>끝낸 일 ${fmtWon(spent)||'0원'} / 전체 ${fmtWon(all)}</span></div>`:''}</div>
+      ${all?`<div class="note"><span>예산</span><span>끝낸 일 ${fmtWon(spent)||'₩0'} / 전체 ${fmtWon(all)}</span></div>`:''}</div>
     <div class="sec">이번 달 할 일 · ${esc(mName(cm))}</div>
     ${mine.length?mine.map(i=>itemHTML(i)).join(''):`<div class="none">${esc(mName(cm))}에 적은 할 일이 없어요</div>`}
     <div class="sec">언제 할까</div>
@@ -461,7 +461,7 @@ function openEdit(id,preset={}){
     <div class="row2"><label>날짜<input type="date" id="fDate" value="${esc(it.date||'')}"></label>
       <label>시간<input type="time" id="fTime" value="${esc(it.time||'')}"></label></div>
     <label>장소<input type="text" id="fPlace" value="${esc(it.place||'')}" placeholder="선택"></label>
-    <div class="row2"><label>예산 (원)<input type="text" inputmode="numeric" id="fCost" value="${it.cost||''}" placeholder="예) 50000"></label>
+    <div class="row2"><label>예산 (₩)<input type="text" inputmode="numeric" id="fCost" value="${it.cost||''}" placeholder="예) 50000"></label>
       <label>링크<input type="text" inputmode="url" id="fLink" value="${esc(it.link||'')}" placeholder="선택"></label></div>
     <div class="lbl">세부 단계</div><div id="fSubs">${(it.subs||[]).map(subRow).join('')}</div>
     <button class="mini" id="fSubAdd" style="margin:6px 0 0">+ 단계</button>
@@ -695,7 +695,7 @@ document.addEventListener('pointerdown',e=>{
 });
 
 /* auto update: Pages caches ~10min, so check for a newer build on open/resume */
-const VER='2026.11.12-5';
+const VER='2026.11.12-6';
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
