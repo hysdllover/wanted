@@ -82,6 +82,9 @@ main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
 .group{font-size:11px;color:var(--ink2);letter-spacing:.14em;margin:20px 0 0}
 .item{display:flex;gap:12px;align-items:flex-start;padding:13px 2px;
   background:repeating-linear-gradient(to right,var(--ink3) 0 5px,transparent 5px 8px) no-repeat 0 100%/100% 1px}
+.grab{flex:none;width:28px;height:28px;margin:-2px -6px 0 0;display:grid;place-items:center;color:var(--ink3);touch-action:none;-webkit-touch-callout:none}
+.grab svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.2}
+.item.drag{position:relative;z-index:3;background:var(--paper);box-shadow:0 8px 14px -8px rgba(77,93,108,.35);opacity:.96}
 .chk{flex:none;width:24px;height:24px;display:grid;place-items:center;margin-top:-1px}
 .chk svg{width:24px;height:24px;fill:none;overflow:visible}
 .chk .sq{stroke:var(--lead);stroke-width:1;opacity:.8;filter:url(#rough)}
@@ -139,10 +142,11 @@ main{padding:4px 20px calc(env(safe-area-inset-bottom) + 100px)}
 .sheet h3{font-size:15px;font-weight:400;margin-bottom:6px}
 .sheet label,.lbl{display:block;font-size:11px;color:var(--ink2);letter-spacing:.06em;margin:16px 0 6px}
 .sheet label input,.sheet label textarea{display:block;width:100%;margin-top:6px;color:var(--ink)}
-input[type=text],input[type=date],textarea{font-size:16px;font-weight:300;border:none;border-bottom:1.2px dashed var(--ink3);
+input[type=text],input[type=date],input[type=time],textarea{font-size:16px;font-weight:300;border:none;border-bottom:1.2px dashed var(--ink3);
   background:transparent;padding:6px 2px;outline:none;-webkit-user-select:text;user-select:text}
-input[type=date]{min-height:34px}
+input[type=date],input[type=time]{min-height:34px;width:100%}
 textarea{border:1.2px solid var(--ink3);padding:10px;resize:none;background:rgba(255,255,255,.5)}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .seg{display:flex;flex-wrap:wrap;gap:6px}
 .seg button{position:relative;padding:6px 12px;font-size:12px;color:var(--ink2)}
 .seg button::before{content:'';position:absolute;inset:0;border:1px solid var(--lead);opacity:.55;filter:url(#rough)}
@@ -170,6 +174,7 @@ textarea{border:1.2px solid var(--ink3);padding:10px;resize:none;background:rgba
   main{padding:0}.wrap{max-width:none}
   .view{display:none!important}#vList{display:block!important}
   .item{break-inside:avoid}
+  .grab{display:none}
 }
 </style>
 </head>
@@ -226,11 +231,13 @@ const seed=()=>{const t=Date.now();return[
 ].map(([title,pri,month],i)=>({id:uid()+i,created:t+i,done:false,doneAt:null,photo:false,title,pri,month,memo:''}))};
 const def=()=>({exam:'2026-11-19',items:seed()});
 let S;try{S=JSON.parse(localStorage.getItem(KEY))||def()}catch(e){S=def()}
+function norm(){if(S.items.some(i=>i.ord==null))[...S.items].sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created).forEach((it,k)=>{if(it.ord==null)it.ord=k+S.items.length})}
+norm();
 const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){toast('저장 공간이 부족해요')}};
 save();
 
 /* ui state */
-let lastId=null,tab='home',sort='pri',hideDone=false,justId=null,fontName='',photoTarget=null;
+let lastId=null,tab='home',sort='manual',hideDone=false,justId=null,fontName='',photoTarget=null;
 
 function dday(){
   const [y,m,d]=S.exam.split('-').map(Number);const t=new Date();t.setHours(0,0,0,0);
@@ -253,38 +260,44 @@ function renderHome(){
   const big=n>0?`D-${n}`:n===0?'D-DAY':`D+${-n}`;
   const lbl=n>0?'수능까지':n===0?'오늘은 수능':'수능 끝, 하나씩 해보기';
   const cm=(new Date().getMonth()+1)+'월';
-  const mine=S.items.filter(i=>i.month===cm).sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created);
+  const mine=S.items.filter(i=>i.month===cm).sort((a,b)=>a.done-b.done||a.ord-b.ord);
   $('#vHome').innerHTML=`
     <div class="dday"><small>${lbl}</small><b>${big}</b><span>${dot(S.exam)}</span>
       ${total&&done===total?'<div><span class="stamp">ALL DONE</span></div>':''}</div>
     <div class="box prog"><div class="top"><span>끝낸 일</span><span>${done} / ${total}</span></div>
       <div class="bar"><i style="width:${total?done/total*100:0}%"></i></div></div>
     <div class="sec">이번 달 할 일 · ${cm}</div>
-    ${mine.length?mine.map(itemHTML).join(''):`<div class="none">${cm}에 적은 할 일이 없어요</div>`}
+    ${mine.length?mine.map(i=>itemHTML(i)).join(''):`<div class="none">${cm}에 적은 할 일이 없어요</div>`}
     <div class="sec">언제 할까</div>
     <div class="months">${MONTHS.map(m=>`<button class="box" data-month="${m}"><b>${S.items.filter(i=>!i.done&&i.month===m).length}</b><small>${m}</small></button>`).join('')}</div>`;
 }
 
-function itemHTML(it){
-  const meta=['★'.repeat(it.pri),it.month!=='미정'&&it.month,it.done&&dot(it.doneAt)].filter(Boolean).join(' · ');
-  return `<div class="item ${it.pri===3?'hi':''} ${it.done?'done':''} ${it.id===justId?'just':''}" data-edit="${it.id}">
+const WK='일월화수목금토';
+const fmtDate=d=>{const [y,m,dd]=d.split('-').map(Number);return `${m}.${dd}(${WK[new Date(y,m-1,dd).getDay()]})`};
+const grabSvg='<svg viewBox="0 0 16 16"><path d="M2.5 5h11M2.5 8.2h11M2.5 11.4h11"/></svg>';
+function itemHTML(it,drag){
+  const when=[it.date&&fmtDate(it.date),it.time].filter(Boolean).join(' ');
+  const meta=['★'.repeat(it.pri),!it.date&&it.month!=='미정'&&it.month,when,it.place,it.done&&dot(it.doneAt)+' 끝'].filter(Boolean).join(' · ');
+  return `<div class="item ${it.pri===3?'hi':''} ${it.done?'done':''} ${it.id===justId?'just':''}" data-edit="${it.id}" data-id="${it.id}">
     <button class="chk" data-chk="${it.id}" aria-label="완료"><svg viewBox="0 0 22 22"><path class="sq" d="M3.2 3.6L18.6 2.9L19.1 18.7L2.8 18.2Z"/><path class="ck" d="M5 11.2c1.4 1.3 2.8 2.8 4.2 4.6C11.6 11 14.6 7 19.5 2.6"/></svg></button>
     <div class="body"><span class="title">${esc(it.title)}</span>
       <div class="meta">${esc(meta)}</div>
-      ${it.memo?`<div class="memo">${esc(it.memo)}</div>`:''}</div></div>`;
+      ${it.memo?`<div class="memo">${esc(it.memo)}</div>`:''}</div>
+    ${drag?`<span class="grab" data-grab="${it.id}" aria-label="순서 바꾸기">${grabSvg}</span>`:''}</div>`;
 }
 
 function renderList(){
-  const by=(a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created;
+  const by=sort==='manual'?(a,b)=>a.ord-b.ord:(a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created;
   const arr=S.items.filter(i=>!(hideDone&&i.done)).sort(by);
   let body='';
   if(!arr.length)body=`<div class="empty">${pencilSvg}${S.items.length?'남은 할 일이 없어요':'수능 끝나고 할 일을<br>하나씩 적어보세요'}</div>`;
-  else if(sort==='pri')body=arr.map(itemHTML).join('');
+  else if(sort==='manual')body=`<div id="dragList">${arr.map(i=>itemHTML(i,true)).join('')}</div>`;
+  else if(sort==='pri')body=arr.map(i=>itemHTML(i)).join('');
   else body=MONTHS.map(k=>{const g=arr.filter(i=>i.month===k);
-      return g.length?`<div class="group">${k}</div>${g.map(itemHTML).join('')}`:''}).join('');
+      return g.length?`<div class="group">${k}</div>${g.map(i=>itemHTML(i)).join('')}`:''}).join('');
   $('#vList').innerHTML=`
     <div class="tools">
-      <select id="sortSel"><option value="pri">중요한 순 ▾</option><option value="month">월별 ▾</option></select>
+      <select id="sortSel"><option value="manual">내 순서 ▾</option><option value="pri">중요한 순 ▾</option><option value="month">월별 ▾</option></select>
       <label><input type="checkbox" class="tick" id="hideDone" ${hideDone?'checked':''}>끝낸 일 숨기기</label>
     </div>${body}`;
   $('#sortSel').value=sort;
@@ -317,14 +330,20 @@ function openEdit(id,preset={}){
     <label>할 일<input type="text" id="fTitle" value="${esc(it.title)}" placeholder="예) 운전면허 따기"></label>
     <div class="lbl">중요도</div><div class="seg" id="fPri">${[1,2,3].map(n=>`<button data-v="${n}" class="${it.pri==n?'on':''}">${'★'.repeat(n)}</button>`).join('')}</div>
     <div class="lbl">언제</div><div class="seg" id="fMonth">${MONTHS.map(m=>`<button data-v="${m}" class="${it.month===m?'on':''}">${m}</button>`).join('')}</div>
+    <div class="row2"><label>날짜<input type="date" id="fDate" value="${esc(it.date||'')}"></label>
+      <label>시간<input type="time" id="fTime" value="${esc(it.time||'')}"></label></div>
+    <label>장소<input type="text" id="fPlace" value="${esc(it.place||'')}" placeholder="선택"></label>
     <label>메모<textarea id="fMemo" rows="3">${esc(it.memo)}</textarea></label>
     <div class="btns">${id?'<button class="btn danger" id="fDel">삭제</button>':''}<button class="btn pri" id="fSave">저장</button></div>`);
   bindSeg();
+  $('#fDate').onchange=e=>{const v=e.target.value;if(!v)return;const m=+v.split('-')[1]+'월';
+    const b=document.querySelector(`#fMonth [data-v="${m}"]`);if(b){document.querySelectorAll('#fMonth button').forEach(x=>x.classList.remove('on'));b.classList.add('on')}};
   if(!id)setTimeout(()=>$('#fTitle').focus(),320);
   $('#fSave').onclick=()=>{
     const title=$('#fTitle').value.trim();if(!title){toast('할 일을 적어주세요');return}
-    const data={title,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim()};
-    if(id)Object.assign(it,data);else S.items.push({id:uid(),created:Date.now(),done:false,doneAt:null,photo:false,...data});
+    const data={title,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim(),
+      date:$('#fDate').value,time:$('#fTime').value,place:$('#fPlace').value.trim()};
+    if(id)Object.assign(it,data);else S.items.push({id:uid(),created:Date.now(),ord:Math.max(0,...S.items.map(i=>i.ord||0))+1,done:false,doneAt:null,photo:false,...data});
     save();closeSheet();render();
   };
   if(id)$('#fDel').onclick=async()=>{if(!confirm('이 할 일을 지울까요?'))return;
@@ -378,7 +397,7 @@ async function exportData(){
 $('#importIn').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
   try{const d=JSON.parse(await f.text());if(!d.S||!Array.isArray(d.S.items))throw 0;
     if(!confirm('지금 데이터를 백업 파일로 바꿀까요?'))return;
-    S=d.S;for(const [id,p] of Object.entries(d.photos||{}))await db.set('p:'+id,p);save();closeSheet();render();toast('불러왔어요')}
+    S=d.S;norm();for(const [id,p] of Object.entries(d.photos||{}))await db.set('p:'+id,p);save();closeSheet();render();toast('불러왔어요')}
   catch(err){toast('백업 파일이 아니에요')}};
 
 function openSettings(){
@@ -402,6 +421,7 @@ function openSettings(){
 document.addEventListener('click',e=>{
   const t=e.target;let el;
   if(el=t.closest('[data-tab]')){tab=el.dataset.tab;window.scrollTo(0,0);render();return}
+  if(t.closest('[data-grab]'))return;
   if(el=t.closest('[data-chk]')){toggle(el.dataset.chk);return}
   if(el=t.closest('#pAdd')){photoTarget=el.dataset.id||lastId;$('#photoIn').click();return}
   if(t.closest('#pSkip')){closeSheet();return}
@@ -424,8 +444,29 @@ document.addEventListener('change',e=>{
   x.beginPath();x.moveTo(62,94);x.quadraticCurveTo(72,102,82,116);x.quadraticCurveTo(98,86,128,58);x.stroke();
   $('#touchIcon').href=c.toDataURL('image/png')})();
 
+/* drag to reorder (manual sort) */
+document.addEventListener('pointerdown',e=>{
+  const h=e.target.closest('[data-grab]');if(!h)return;
+  e.preventDefault();const el=h.closest('.item'),box=el.parentNode;
+  const y0=e.clientY,top0=el.offsetTop;let raf=0,lastY=y0;
+  el.classList.add('drag');h.setPointerCapture(e.pointerId);
+  const move=ev=>{lastY=ev.clientY;
+    for(const sib of box.children){if(sib===el)continue;const r=sib.getBoundingClientRect(),mid=r.top+r.height/2;
+      const after=el.compareDocumentPosition(sib)&Node.DOCUMENT_POSITION_FOLLOWING;
+      if(after&&lastY>mid){box.insertBefore(el,sib.nextSibling)}
+      else if(!after&&lastY<mid){box.insertBefore(el,sib);break}}
+    el.style.transform=`translateY(${lastY-y0-(el.offsetTop-top0)}px)`;
+    if(!raf&&(lastY<90||lastY>innerHeight-130))raf=requestAnimationFrame(function sc(){
+      const d=lastY<90?-6:lastY>innerHeight-130?6:0;if(!d){raf=0;return}scrollBy(0,d);raf=requestAnimationFrame(sc)})};
+  const up=()=>{h.removeEventListener('pointermove',move);h.removeEventListener('pointerup',up);h.removeEventListener('pointercancel',up);
+    cancelAnimationFrame(raf);el.style.transform='';el.classList.remove('drag');
+    const ids=[...box.children].map(x=>x.dataset.id),its=ids.map(id=>S.items.find(i=>i.id===id));
+    const ords=its.map(i=>i.ord).sort((a,b)=>a-b);its.forEach((it,k)=>it.ord=ords[k]);save()};
+  h.addEventListener('pointermove',move);h.addEventListener('pointerup',up);h.addEventListener('pointercancel',up);
+});
+
 /* auto update: Pages caches ~10min, so check for a newer build on open/resume */
-const VER='2026.11.12-1';
+const VER='2026.11.12-2';
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
