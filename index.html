@@ -299,6 +299,10 @@ const addDays=(s,n)=>{const d=toDate(s);d.setDate(d.getDate()+n);return ymd(d)};
 const monthOf=ds=>{const m=+ds.split('-')[1]+'월';return MONTHS.includes(m)?m:'미정'};
 const fmtWon=n=>!n?'':`₩${n.toLocaleString()}`;
 const WK='일월화수목금토';
+/* pull the real URL out of pasted share text (e.g. "I recommend Coupang! ... https://link.coupang.com/...") */
+const cleanLink=v=>{v=String(v||'').trim();if(!v)return '';
+  const m=v.match(/https?:\/\/[^\s\/<>"']+\.[^\s<>"']*/i);if(m)return m[0];
+  return /^[\w-]+(\.[\w-]+)+(\/\S*)?$/.test(v)?'https://'+v:''};
 const fmtDate=d=>{const x=toDate(d);return `${x.getMonth()+1}.${x.getDate()}(${WK[x.getDay()]})`};
 
 /* storage */
@@ -322,6 +326,7 @@ const mName=m=>(S.mnames&&S.mnames[m])||m;
 let S;try{S=JSON.parse(localStorage.getItem(KEY))||def()}catch(e){S=def()}
 function norm(){
   S.cats=S.cats||[];S.mnames=S.mnames||{};S.ui={...UI_DEF,...(S.ui||{})};
+  S.items.forEach(i=>{if(i.link)i.link=cleanLink(i.link)});
   S.period=S.period||{start:addDays(S.exam,1),end:'2027-02-28'};
   if(S.items.some(i=>i.ord==null))[...S.items].sort((a,b)=>a.done-b.done||b.pri-a.pri||a.created-b.created).forEach((it,k)=>{if(it.ord==null)it.ord=k+S.items.length});
 }
@@ -476,7 +481,7 @@ function openEdit(id,preset={}){
   if(!id)setTimeout(()=>$('#fTitle').focus(),320);
   $('#fSave').onclick=()=>{
     const title=$('#fTitle').value.trim();if(!title){toast('할 일을 적어주세요');return}
-    let link=$('#fLink').value.trim();if(link&&!/^[a-z]+:/i.test(link))link='https://'+link;
+    const rawLink=$('#fLink').value.trim(),link=cleanLink(rawLink);if(rawLink&&!link){toast('링크 주소를 찾지 못했어요');return}
     const data={title,cat:segVal('fCat')||null,pri:+segVal('fPri'),month:segVal('fMonth'),memo:$('#fMemo').value.trim(),
       date:$('#fDate').value,time:$('#fTime').value,place:$('#fPlace').value.trim(),
       cost:+$('#fCost').value.replace(/[^\d]/g,'')||0,link,
@@ -702,7 +707,7 @@ document.addEventListener('pointerdown',e=>{
 });
 
 /* auto update: Pages caches ~10min, so check for a newer build on open/resume */
-const VER='2026.11.12-7';
+const VER='2026.11.12-8';
 async function checkUpdate(){try{const r=await fetch(location.pathname+'?t='+Date.now(),{cache:'no-store'});const t=await r.text();
   const m=t.match(/const VER='([^']+)'/);if(m&&m[1]!==VER)location.replace(location.pathname+'?v='+m[1])}catch(e){}}
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)checkUpdate()});
